@@ -46,7 +46,8 @@ const bakedMaterial = new THREE.MeshBasicMaterial({ map: bakedTexture })
 /**
  * Model
  */
-
+let mixer = null;
+let animations = null;
 gltfLoader.load(
     'bedroom_coding_three_js_optimized.glb',
     (gltf) => {
@@ -55,6 +56,15 @@ gltfLoader.load(
             if (child.isMesh) {
                 child.material = bakedMaterial
             }
+        });
+
+        // Animations
+        mixer = new THREE.AnimationMixer(gltf.scene);
+        animations = gltf.animations;
+
+        animations.forEach((animation) => {
+            console.log(animation);
+            mixer.clipAction(animation).play();
         });
     }
 )
@@ -111,12 +121,19 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  * Animate
  */
 const clock = new THREE.Clock()
-
+let previousTime = 0; 
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
-
+    const deltaTime = elapsedTime - previousTime;
+    previousTime = elapsedTime;
+    // Animations
+    if (mixer) {
+        console.log(mixer);
+        mixer.update(deltaTime);
+    }
     // Update controls
     controls.update()
+
 
     // Render
     renderer.render(scene, camera)
